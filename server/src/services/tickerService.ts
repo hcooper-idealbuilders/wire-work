@@ -12,6 +12,20 @@ export interface TickerEntry {
   occurredAt: string
 }
 
+function rowToEntry(row: Record<string, unknown>): TickerEntry {
+  return {
+    id: row.id as number,
+    userId: row.user_id as number,
+    displayName: row.display_name as string,
+    eventType: row.event_type as string,
+    entityType: row.entity_type as string,
+    entityId: row.entity_id as string | null,
+    summary: row.summary as string,
+    userNote: row.user_note as string | null,
+    occurredAt: String(row.occurred_at),
+  }
+}
+
 export async function createTickerEntry(params: {
   userId: number
   eventType: string
@@ -23,48 +37,22 @@ export async function createTickerEntry(params: {
   const result = await pool.query(
     `INSERT INTO activity_log (user_id, event_type, entity_type, entity_id, summary, user_note)
      VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id, user_id, event_type, entity_type, entity_id, summary, user_note, occurred_at`,
+     RETURNING id, user_id, event_type, entity_type, entity_id, summary, user_note, occurred_at,
+       (SELECT display_name FROM users WHERE id = $1) AS display_name`,
     [params.userId, params.eventType, params.entityType, params.entityId ?? null, params.summary, params.userNote ?? null],
   )
-
-  const row = result.rows[0]
-  const userResult = await pool.query('SELECT display_name FROM users WHERE id = $1', [params.userId])
-
-  return {
-    id: row.id,
-    userId: row.user_id,
-    displayName: userResult.rows[0]?.display_name ?? 'Unknown',
-    eventType: row.event_type,
-    entityType: row.entity_type,
-    entityId: row.entity_id,
-    summary: row.summary,
-    userNote: row.user_note,
-    occurredAt: row.occurred_at,
-  }
+  return rowToEntry(result.rows[0])
 }
 
 export async function addNoteToEntry(id: number, userNote: string): Promise<TickerEntry | null> {
   const result = await pool.query(
     `UPDATE activity_log SET user_note = $1 WHERE id = $2
-     RETURNING id, user_id, event_type, entity_type, entity_id, summary, user_note, occurred_at`,
+     RETURNING id, user_id, event_type, entity_type, entity_id, summary, user_note, occurred_at,
+       (SELECT display_name FROM users WHERE users.id = activity_log.user_id) AS display_name`,
     [userNote, id],
   )
   if (result.rows.length === 0) return null
-
-  const row = result.rows[0]
-  const userResult = await pool.query('SELECT display_name FROM users WHERE id = $1', [row.user_id])
-
-  return {
-    id: row.id,
-    userId: row.user_id,
-    displayName: userResult.rows[0]?.display_name ?? 'Unknown',
-    eventType: row.event_type,
-    entityType: row.entity_type,
-    entityId: row.entity_id,
-    summary: row.summary,
-    userNote: row.user_note,
-    occurredAt: row.occurred_at,
-  }
+  return rowToEntry(result.rows[0])
 }
 
 export async function getRecentEntries(limit = 50, before?: string): Promise<TickerEntry[]> {
@@ -86,15 +74,5 @@ export async function getRecentEntries(limit = 50, before?: string): Promise<Tic
     params,
   )
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    userId: row.user_id,
-    displayName: row.display_name,
-    eventType: row.event_type,
-    entityType: row.entity_type,
-    entityId: row.entity_id,
-    summary: row.summary,
-    userNote: row.user_note,
-    occurredAt: row.occurred_at,
-  }))
+  return result.rows.map(rowToEntry)
 }

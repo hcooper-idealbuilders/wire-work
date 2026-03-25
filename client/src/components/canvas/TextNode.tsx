@@ -3,14 +3,15 @@ import { NodeProps, Handle, Position } from 'reactflow'
 import { CanvasNodeData } from '../../types'
 
 const DOT = {
-  width: 10,
-  height: 10,
+  width: 8,
+  height: 8,
   background: '#0d527e',
   border: '2px solid white',
   borderRadius: '50%',
+  opacity: 0.5,
 }
 
-export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
+export default function TextNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -24,7 +25,7 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
   const handleBlur = useCallback(() => {
     setEditing(false)
     if (draft.trim() !== data.label) {
-      window.dispatchEvent(new CustomEvent('ww:node_label_change', { detail: { id, label: draft.trim() || 'Untitled' } }))
+      window.dispatchEvent(new CustomEvent('ww:node_label_change', { detail: { id, label: draft.trim() || 'Text' } }))
     }
   }, [draft, data.label, id])
 
@@ -39,19 +40,14 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
     }
   }, [data.label])
 
-  const bgColor = data.color || '#ffffff'
-
   return (
     <div
       onDoubleClick={handleDoubleClick}
-      style={{ backgroundColor: bgColor }}
       className={`
-        min-w-[120px] max-w-[260px] min-h-[48px]
-        border-2 rounded-lg shadow-md
-        flex items-center justify-center px-4 py-3
+        min-w-[60px] max-w-[400px] px-2 py-1
         cursor-default select-none
-        ${selected ? 'border-gold-400 shadow-lg shadow-gold-100' : 'border-navy-300'}
-        transition-all
+        rounded
+        ${selected ? 'ring-2 ring-gold-400 ring-offset-1' : ''}
       `}
     >
       <Handle type="source" id="top" position={Position.Top} style={DOT} />
@@ -67,10 +63,10 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           rows={2}
-          className="w-full text-sm text-gray-800 bg-transparent border-none outline-none resize-none text-center"
+          className="w-full text-sm text-gray-600 bg-transparent border-none outline-none resize-none"
         />
       ) : (
-        <span className="text-sm text-gray-800 text-center whitespace-pre-wrap break-words">
+        <span className="text-sm text-gray-600 whitespace-pre-wrap break-words">
           {data.label || 'Double-click to edit'}
         </span>
       )}

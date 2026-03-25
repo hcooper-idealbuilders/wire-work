@@ -2,6 +2,7 @@ import { Server } from 'socket.io'
 import jwt from 'jsonwebtoken'
 import { registerCanvasHandlers } from './canvasHandlers'
 import { registerNotesHandlers } from './notesHandlers'
+import * as tickerService from '../services/tickerService'
 
 export function setupSocket(io: Server) {
   // Verify JWT on connection
@@ -34,6 +35,18 @@ export function setupSocket(io: Server) {
     // Register handlers
     registerCanvasHandlers(io, socket, userId, username)
     registerNotesHandlers(io, socket, userId, username)
+
+    // Shared ticker note handler (used by both canvas and notes prompts)
+    socket.on('ticker:note_added', async (data: { entryId: number; userNote: string }) => {
+      try {
+        const entry = await tickerService.addNoteToEntry(data.entryId, data.userNote)
+        if (entry) {
+          io.to('wire-work').emit('ticker:entry_updated', { entry })
+        }
+      } catch (err) {
+        console.error('ticker:note_added error', err)
+      }
+    })
 
     socket.on('disconnect', () => {
       console.log(`${username} disconnected (${socket.id})`)

@@ -1,19 +1,15 @@
 import axios from 'axios'
-import { getBackendUrl } from './socket'
+import { authHeader, apiUrl } from './http'
 import { PanelKey } from '../types'
 
-function authHeader(token: string) {
-  return { Authorization: `Bearer ${token}` }
-}
-
 export async function fetchNotes(token: string): Promise<Record<PanelKey, string>> {
-  const res = await axios.get(`${getBackendUrl()}/api/notes`, { headers: authHeader(token) })
+  const res = await axios.get(apiUrl('/api/notes'), { headers: authHeader(token) })
   return res.data
 }
 
 export async function patchNote(token: string, panelKey: PanelKey, content: string) {
   await axios.patch(
-    `${getBackendUrl()}/api/notes/${panelKey}`,
+    apiUrl(`/api/notes/${panelKey}`),
     { content },
     { headers: authHeader(token) },
   )

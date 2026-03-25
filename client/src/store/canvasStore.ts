@@ -11,6 +11,7 @@ interface CanvasStore {
   applyEdgeChanges: (changes: EdgeChange[]) => void
   addNode: (node: Node<CanvasNodeData>) => void
   updateNodeLabel: (id: string, label: string) => void
+  updateNodeColor: (id: string, color: string) => void
   removeNode: (id: string) => void
   addEdge: (edge: Edge) => void
   removeEdge: (id: string) => void
@@ -33,6 +34,10 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   updateNodeLabel: (id, label) =>
     set((state) => ({
       nodes: state.nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, label } } : n)),
+    })),
+  updateNodeColor: (id, color) =>
+    set((state) => ({
+      nodes: state.nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, color } } : n)),
     })),
   removeNode: (id) =>
     set((state) => ({

@@ -7,6 +7,7 @@ export interface CanvasNode {
   width: number | null
   height: number | null
   label: string
+  color: string
   updatedAt: string
   updatedBy: number | null
 }
@@ -38,23 +39,32 @@ export async function upsertNode(node: {
   width?: number
   height?: number
   label: string
+  color?: string
   updatedBy: number
 }): Promise<CanvasNode> {
   const result = await pool.query(
-    `INSERT INTO canvas_nodes (id, position_x, position_y, width, height, label, updated_by, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+    `INSERT INTO canvas_nodes (id, position_x, position_y, width, height, label, color, updated_by, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
      ON CONFLICT (id) DO UPDATE SET
        position_x = EXCLUDED.position_x,
        position_y = EXCLUDED.position_y,
        width = EXCLUDED.width,
        height = EXCLUDED.height,
        label = EXCLUDED.label,
+       color = EXCLUDED.color,
        updated_by = EXCLUDED.updated_by,
        updated_at = NOW()
      RETURNING *`,
-    [node.id, node.positionX, node.positionY, node.width ?? null, node.height ?? null, node.label, node.updatedBy],
+    [node.id, node.positionX, node.positionY, node.width ?? null, node.height ?? null, node.label, node.color ?? '#ffffff', node.updatedBy],
   )
   return toNode(result.rows[0])
+}
+
+export async function updateNodeColor(id: string, color: string, updatedBy: number): Promise<void> {
+  await pool.query(
+    'UPDATE canvas_nodes SET color = $1, updated_by = $2, updated_at = NOW() WHERE id = $3',
+    [color, updatedBy, id],
+  )
 }
 
 export async function updateNodePosition(id: string, x: number, y: number, updatedBy: number): Promise<void> {
@@ -105,6 +115,7 @@ function toNode(row: Record<string, unknown>): CanvasNode {
     width: row.width as number | null,
     height: row.height as number | null,
     label: row.label as string,
+    color: (row.color as string) ?? '#ffffff',
     updatedAt: String(row.updated_at),
     updatedBy: row.updated_by as number | null,
   }

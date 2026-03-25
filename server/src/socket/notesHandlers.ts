@@ -28,14 +28,4 @@ export function registerNotesHandlers(io: Server, socket: Socket, userId: number
     }
   })
 
-  socket.on('note:ticker_note_added', async (data: { entryId: number; userNote: string }) => {
-    try {
-      const entry = await tickerService.addNoteToEntry(data.entryId, data.userNote)
-      if (entry) {
-        io.to('wire-work').emit('ticker:entry_updated', { entry })
-      }
-    } catch (err) {
-      console.error('note:ticker_note_added error', err)
-    }
-  })
 }

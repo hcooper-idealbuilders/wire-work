@@ -15,7 +15,7 @@ function AppShell() {
 
   return (
     <div
-      className="h-screen w-screen overflow-hidden bg-gray-100"
+      className="h-screen w-screen overflow-hidden bg-navy-50"
       style={{
         display: 'grid',
         gridTemplateAreas: '"canvas ticker" "notes ticker"',
@@ -24,7 +24,7 @@ function AppShell() {
       }}
     >
       {/* Canvas */}
-      <div style={{ gridArea: 'canvas' }} className="overflow-hidden border-b border-gray-200">
+      <div style={{ gridArea: 'canvas' }} className="overflow-hidden border-b border-navy-200">
         <ReactFlowProvider>
           <CanvasPane />
         </ReactFlowProvider>
@@ -43,12 +43,12 @@ function AppShell() {
       {/* Ticker note prompt */}
       <NotePromptModal />
 
-      {/* Logout */}
-      <div className="fixed top-2 right-[292px] z-20">
-        <span className="text-xs text-gray-400 mr-2">{user.displayName}</span>
+      {/* User info — tucked into ticker area */}
+      <div className="fixed top-1 right-[8px] z-20 flex items-center gap-2">
+        <span className="text-[10px] text-navy-400">{user.displayName}</span>
         <button
           onClick={logout}
-          className="text-xs text-gray-400 hover:text-gray-600 underline"
+          className="text-[10px] text-navy-300 hover:text-gold-500 transition-colors"
         >
           Sign out
         </button>

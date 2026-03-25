@@ -10,10 +10,10 @@ const DOT = {
   borderRadius: '50%',
 }
 
-export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
+export default function SectionNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleDoubleClick = useCallback(() => {
     setDraft(data.label)
@@ -24,12 +24,12 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
   const handleBlur = useCallback(() => {
     setEditing(false)
     if (draft.trim() !== data.label) {
-      window.dispatchEvent(new CustomEvent('ww:node_label_change', { detail: { id, label: draft.trim() || 'Untitled' } }))
+      window.dispatchEvent(new CustomEvent('ww:node_label_change', { detail: { id, label: draft.trim() || 'Section' } }))
     }
   }, [draft, data.label, id])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter') {
       e.preventDefault()
       inputRef.current?.blur()
     }
@@ -39,19 +39,19 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
     }
   }, [data.label])
 
-  const bgColor = data.color || '#ffffff'
+  const bgColor = data.color || '#f3f4f6'
 
   return (
     <div
       onDoubleClick={handleDoubleClick}
-      style={{ backgroundColor: bgColor }}
+      style={{ backgroundColor: bgColor, borderColor: bgColor === '#f3f4f6' ? '#d1d5db' : bgColor }}
       className={`
-        min-w-[120px] max-w-[260px] min-h-[48px]
-        border-2 rounded-lg shadow-md
-        flex items-center justify-center px-4 py-3
+        w-[280px] min-h-[160px]
+        border-2 border-dashed rounded-xl
+        flex flex-col px-4 pt-2 pb-4
         cursor-default select-none
-        ${selected ? 'border-gold-400 shadow-lg shadow-gold-100' : 'border-navy-300'}
-        transition-all
+        ${selected ? 'ring-2 ring-gold-400 ring-offset-2' : ''}
+        transition-all opacity-80
       `}
     >
       <Handle type="source" id="top" position={Position.Top} style={DOT} />
@@ -60,18 +60,17 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
       <Handle type="source" id="right" position={Position.Right} style={DOT} />
 
       {editing ? (
-        <textarea
+        <input
           ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          rows={2}
-          className="w-full text-sm text-gray-800 bg-transparent border-none outline-none resize-none text-center"
+          className="text-xs font-bold text-navy-500 uppercase tracking-wider bg-transparent border-none outline-none"
         />
       ) : (
-        <span className="text-sm text-gray-800 text-center whitespace-pre-wrap break-words">
-          {data.label || 'Double-click to edit'}
+        <span className="text-xs font-bold text-navy-500 uppercase tracking-wider">
+          {data.label || 'Section'}
         </span>
       )}
     </div>

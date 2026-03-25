@@ -91,6 +91,23 @@ export function registerCanvasHandlers(io: Server, socket: Socket, userId: numbe
     }
   })
 
+  socket.on('canvas:node_color_changed', async (data: { nodeId: string; color: string }) => {
+    try {
+      await canvasService.updateNodeColor(data.nodeId, data.color, userId)
+      const entry = await tickerService.createTickerEntry({
+        userId,
+        eventType: 'node_color_changed',
+        entityType: 'node',
+        entityId: data.nodeId,
+        summary: `${username} changed a node's color`,
+      })
+      socket.to('wire-work').emit('canvas:node_color_changed', { nodeId: data.nodeId, color: data.color, userId })
+      io.to('wire-work').emit('ticker:new_entry', { entry })
+    } catch (err) {
+      console.error('canvas:node_color_changed error', err)
+    }
+  })
+
   socket.on('canvas:edge_deleted', async (data: { edgeId: string; userNote?: string }) => {
     try {
       await canvasService.deleteEdge(data.edgeId)
@@ -109,14 +126,4 @@ export function registerCanvasHandlers(io: Server, socket: Socket, userId: numbe
     }
   })
 
-  socket.on('canvas:ticker_note_added', async (data: { entryId: number; userNote: string }) => {
-    try {
-      const entry = await tickerService.addNoteToEntry(data.entryId, data.userNote)
-      if (entry) {
-        io.to('wire-work').emit('ticker:entry_updated', { entry })
-      }
-    } catch (err) {
-      console.error('canvas:ticker_note_added error', err)
-    }
-  })
 }

@@ -10,7 +10,7 @@ const DOT = {
   borderRadius: '50%',
 }
 
-export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
+export default function StickyNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -24,7 +24,7 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
   const handleBlur = useCallback(() => {
     setEditing(false)
     if (draft.trim() !== data.label) {
-      window.dispatchEvent(new CustomEvent('ww:node_label_change', { detail: { id, label: draft.trim() || 'Untitled' } }))
+      window.dispatchEvent(new CustomEvent('ww:node_label_change', { detail: { id, label: draft.trim() || 'Note' } }))
     }
   }, [draft, data.label, id])
 
@@ -39,18 +39,19 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
     }
   }, [data.label])
 
-  const bgColor = data.color || '#ffffff'
+  const bgColor = data.color || '#fef9c3'
 
   return (
     <div
       onDoubleClick={handleDoubleClick}
       style={{ backgroundColor: bgColor }}
       className={`
-        min-w-[120px] max-w-[260px] min-h-[48px]
-        border-2 rounded-lg shadow-md
-        flex items-center justify-center px-4 py-3
+        w-[180px] min-h-[120px]
+        shadow-md rounded
+        flex flex-col px-3 py-2
         cursor-default select-none
-        ${selected ? 'border-gold-400 shadow-lg shadow-gold-100' : 'border-navy-300'}
+        border
+        ${selected ? 'border-gold-400 shadow-lg' : 'border-navy-200'}
         transition-all
       `}
     >
@@ -66,12 +67,12 @@ export default function WorkflowNode({ id, data, selected }: NodeProps<CanvasNod
           onChange={(e) => setDraft(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          rows={2}
-          className="w-full text-sm text-gray-800 bg-transparent border-none outline-none resize-none text-center"
+          rows={5}
+          className="w-full flex-1 text-sm text-gray-800 bg-transparent border-none outline-none resize-none"
         />
       ) : (
-        <span className="text-sm text-gray-800 text-center whitespace-pre-wrap break-words">
-          {data.label || 'Double-click to edit'}
+        <span className="text-sm text-gray-800 whitespace-pre-wrap break-words">
+          {data.label || 'Double-click to add notes…'}
         </span>
       )}
     </div>

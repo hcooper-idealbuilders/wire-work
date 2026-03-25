@@ -1,0 +1,1 @@
+ALTER TABLE canvas_nodes ADD COLUMN IF NOT EXISTS color VARCHAR(20) DEFAULT '#ffffff';

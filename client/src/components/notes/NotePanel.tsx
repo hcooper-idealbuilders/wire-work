@@ -41,10 +41,10 @@ export default function NotePanel({ panelKey }: NotePanelProps) {
   }, [content])
 
   return (
-    <div className="flex flex-col h-full border-r border-gray-200 last:border-r-0">
+    <div className="flex flex-col h-full border-r border-navy-100 last:border-r-0">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+      <div className="px-3 py-2 border-b border-navy-100 bg-navy-50 flex-shrink-0">
+        <h3 className="text-xs font-semibold text-navy-600 uppercase tracking-wider">
           {PANEL_LABELS[panelKey]}
         </h3>
         {/* Mini toolbar */}
@@ -93,7 +93,7 @@ function ToolbarBtn({
       onMouseDown={(e) => { e.preventDefault(); onClick() }}
       title={title}
       className={`px-1.5 py-0.5 rounded text-xs transition-colors ${
-        active ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-100'
+        active ? 'bg-gold-50 text-gold-700' : 'text-navy-400 hover:bg-navy-50'
       }`}
     >
       {children}

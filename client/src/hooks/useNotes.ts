@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNotesStore } from '../store/notesStore'
-import { fetchNotes, patchNote } from '../api/notesApi'
+import { fetchNotes } from '../api/notesApi'
 import { getSocket } from '../api/socket'
 import { PanelKey } from '../types'
 
@@ -18,7 +18,6 @@ export function useNotes() {
     const socket = getSocket()
 
     function onNoteChanged({ panelKey, content, userId }: { panelKey: PanelKey; content: string; userId: number }) {
-      // Only apply remote changes
       if (userId !== user?.id) {
         setPanel(panelKey, content)
       }
@@ -26,22 +25,16 @@ export function useNotes() {
 
     socket.on('note:changed', onNoteChanged)
     return () => { socket.off('note:changed', onNoteChanged) }
-  }, [token])
+  }, [token, user?.id])
 
-  function handleNoteChange(panelKey: PanelKey, content: string, onSaved?: (entryId: number) => void) {
+  function handleNoteChange(panelKey: PanelKey, content: string) {
     setPanel(panelKey, content)
 
     clearTimeout(debounceTimers.current[panelKey])
-    debounceTimers.current[panelKey] = setTimeout(async () => {
+    debounceTimers.current[panelKey] = setTimeout(() => {
       if (!token) return
-      try {
-        await patchNote(token, panelKey, content)
-        const socket = getSocket()
-        socket.emit('note:changed', { panelKey, content })
-        // Ticker entry ID comes back via ticker:new_entry event
-      } catch (err) {
-        console.error('Failed to save note', err)
-      }
+      const socket = getSocket()
+      socket.emit('note:changed', { panelKey, content })
     }, 500)
   }
 

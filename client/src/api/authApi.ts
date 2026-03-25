@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { getBackendUrl } from './socket'
+import { apiUrl } from './http'
 import { User } from '../types'
 
 export async function login(username: string, password: string): Promise<{ token: string; user: User }> {
-  const res = await axios.post(`${getBackendUrl()}/api/auth/login`, { username, password })
+  const res = await axios.post(apiUrl('/api/auth/login'), { username, password })
   return res.data
 }
