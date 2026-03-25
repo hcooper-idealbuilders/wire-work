@@ -1,0 +1,93 @@
+name: Deploy Client to SharePoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client/**'
+
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build
+        working-directory: client
+        env:
+          VITE_BACKEND_URL: ${{ secrets.BACKEND_URL }}
+        run: npm run build
+
+      # Inject the production backend URL into config.js
+      - name: Inject backend URL into config.js
+        run: |
+          cat > client/dist/config.js << 'EOF'
+          window.__WIRE_WORK_CONFIG__ = {
+            BACKEND_URL: '${{ secrets.BACKEND_URL }}'
+          }
+          EOF
+
+      # Install CLI for Microsoft 365 (m365) to upload files to SharePoint
+      - name: Install m365 CLI
+        run: npm install -g @pnp/cli-microsoft365
+
+      # Authenticate using an Azure AD app (certificate or client secret)
+      - name: Login to Microsoft 365
+        run: |
+          m365 login \
+            --authType secret \
+            --userName "${{ secrets.AZURE_CLIENT_ID }}" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenantId "${{ secrets.AZURE_TENANT_ID }}"
+
+      # Upload all files in dist/ to the SharePoint folder
+      - name: Upload files to SharePoint
+        run: |
+          SITE_URL="${{ secrets.SHAREPOINT_SITE_URL }}"
+          FOLDER="${{ secrets.SHAREPOINT_FOLDER }}"
+
+          # Upload root-level files
+          for file in client/dist/*.html client/dist/*.js; do
+            [ -f "$file" ] || continue
+            echo "Uploading $file"
+            m365 spo file add \
+              --webUrl "$SITE_URL" \
+              --folder "$FOLDER" \
+              --path "$file" \
+              --overwrite
+          done
+
+          # Upload assets subfolder
+          m365 spo folder ensure \
+            --webUrl "$SITE_URL" \
+            --folderUrl "$FOLDER/assets"
+
+          for file in client/dist/assets/*; do
+            [ -f "$file" ] || continue
+            echo "Uploading asset: $file"
+            m365 spo file add \
+              --webUrl "$SITE_URL" \
+              --folder "$FOLDER/assets" \
+              --path "$file" \
+              --overwrite
+          done
+
+      - name: Logout
+        if: always()
+        run: m365 logout
