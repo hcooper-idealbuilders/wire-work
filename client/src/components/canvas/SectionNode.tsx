@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { NodeProps, Handle, Position } from 'reactflow'
 import { CanvasNodeData } from '../../types'
+import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea'
 
 const DOT = {
   width: 10,
@@ -13,7 +14,8 @@ const DOT = {
 export default function SectionNode({ id, data, selected }: NodeProps<CanvasNodeData>) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  useAutosizeTextarea(inputRef, editing ? draft : data.label)
 
   const handleDoubleClick = useCallback(() => {
     setDraft(data.label)
@@ -29,7 +31,7 @@ export default function SectionNode({ id, data, selected }: NodeProps<CanvasNode
   }, [draft, data.label, id])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       inputRef.current?.blur()
     }
@@ -46,7 +48,7 @@ export default function SectionNode({ id, data, selected }: NodeProps<CanvasNode
       onDoubleClick={handleDoubleClick}
       style={{ backgroundColor: bgColor, borderColor: bgColor === '#f3f4f6' ? '#d1d5db' : bgColor }}
       className={`
-        w-[280px] min-h-[160px]
+        w-[280px] min-h-[160px] overflow-hidden
         border-2 border-dashed rounded-xl
         flex flex-col px-4 pt-2 pb-4
         cursor-default select-none
@@ -60,16 +62,17 @@ export default function SectionNode({ id, data, selected }: NodeProps<CanvasNode
       <Handle type="source" id="right" position={Position.Right} style={DOT} />
 
       {editing ? (
-        <input
+        <textarea
           ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="text-xs font-bold text-navy-500 uppercase tracking-wider bg-transparent border-none outline-none"
+          rows={1}
+          className="w-full text-xs font-bold text-navy-500 uppercase tracking-wider bg-transparent border-none outline-none resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
         />
       ) : (
-        <span className="text-xs font-bold text-navy-500 uppercase tracking-wider">
+        <span className="w-full text-xs font-bold text-navy-500 uppercase tracking-wider whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
           {data.label || 'Section'}
         </span>
       )}

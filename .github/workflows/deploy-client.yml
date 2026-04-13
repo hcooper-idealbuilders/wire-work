@@ -3,7 +3,7 @@ name: Deploy Client to SharePoint
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'client/**'
 

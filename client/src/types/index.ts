@@ -18,14 +18,15 @@ export interface CanvasNodeData {
 
 export const NODE_COLORS = [
   { name: 'White', value: '#ffffff' },
-  { name: 'Navy Light', value: '#e8f1f7' },
-  { name: 'Gold Light', value: '#fdf8ed' },
-  { name: 'Blue', value: '#dbeafe' },
-  { name: 'Green', value: '#dcfce7' },
-  { name: 'Yellow', value: '#fef9c3' },
-  { name: 'Orange', value: '#ffedd5' },
-  { name: 'Red', value: '#fee2e2' },
-  { name: 'Gray', value: '#f3f4f6' },
+  { name: 'Yellow', value: '#facc15' },
+  { name: 'Orange', value: '#fb923c' },
+  { name: 'Red', value: '#f87171' },
+  { name: 'Pink', value: '#f472b6' },
+  { name: 'Purple', value: '#a78bfa' },
+  { name: 'Blue', value: '#60a5fa' },
+  { name: 'Teal', value: '#2dd4bf' },
+  { name: 'Green', value: '#4ade80' },
+  { name: 'Gray', value: '#9ca3af' },
 ]
 
 export interface TickerEntry {

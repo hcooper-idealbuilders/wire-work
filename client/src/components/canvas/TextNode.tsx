@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { NodeProps, Handle, Position } from 'reactflow'
 import { CanvasNodeData } from '../../types'
+import { useAutosizeTextarea } from '../../hooks/useAutosizeTextarea'
 
 const DOT = {
   width: 8,
@@ -15,6 +16,7 @@ export default function TextNode({ id, data, selected }: NodeProps<CanvasNodeDat
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(data.label)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  useAutosizeTextarea(inputRef, editing ? draft : data.label)
 
   const handleDoubleClick = useCallback(() => {
     setDraft(data.label)
@@ -44,7 +46,7 @@ export default function TextNode({ id, data, selected }: NodeProps<CanvasNodeDat
     <div
       onDoubleClick={handleDoubleClick}
       className={`
-        min-w-[60px] max-w-[400px] px-2 py-1
+        w-[280px] px-2 py-1 overflow-hidden
         cursor-default select-none
         rounded
         ${selected ? 'ring-2 ring-gold-400 ring-offset-1' : ''}
@@ -62,11 +64,11 @@ export default function TextNode({ id, data, selected }: NodeProps<CanvasNodeDat
           onChange={(e) => setDraft(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          rows={2}
-          className="w-full text-sm text-gray-600 bg-transparent border-none outline-none resize-none"
+          rows={1}
+          className="w-full text-sm text-gray-600 bg-transparent border-none outline-none resize-none overflow-hidden whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
         />
       ) : (
-        <span className="text-sm text-gray-600 whitespace-pre-wrap break-words">
+        <span className="block w-full text-sm text-gray-600 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
           {data.label || 'Double-click to edit'}
         </span>
       )}
